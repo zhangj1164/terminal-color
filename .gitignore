@@ -1,0 +1,11 @@
+# Build artifacts
+.zig-cache/
+zig-out/
+
+# Compiled executables
+*.exe
+*.pdb
+
+# Tool configurations
+.wanma-cli/
+.claude/
