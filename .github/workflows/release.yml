@@ -11,7 +11,22 @@ permissions:
 jobs:
   build:
     name: Build and Package
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+            arch: x64
+            executable: terminal-bg.exe
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+            executable: terminal-bg
+          - os: macos-latest
+            platform: macos
+            arch: x64
+            executable: terminal-bg
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout code
@@ -25,23 +40,26 @@ jobs:
 
       - name: Build project
         run: |
-          Write-Host "Building project with Zig..."
+          echo "Building project with Zig..."
           zig build
-          Write-Host "Build completed. Checking output..."
-          if (Test-Path "zig-out\bin\terminal-bg.exe") {
-            Write-Host "Executable found: zig-out\bin\terminal-bg.exe"
-            Get-Item "zig-out\bin\terminal-bg.exe" | Select-Object Name, Length, LastWriteTime
-          } else {
-            Write-Host "ERROR: Executable not found!"
-            Write-Host "Listing zig-out directory contents:"
-            Get-ChildItem -Path zig-out -Recurse
-            exit 1
-          }
+          echo "Build completed. Checking output..."
 
-      - name: Create package
+          if [ -f "zig-out/bin/${{ matrix.executable }}" ]; then
+            echo "Executable found: zig-out/bin/${{ matrix.executable }}"
+            ls -lh zig-out/bin/${{ matrix.executable }}
+          else
+            echo "ERROR: Executable not found!"
+            echo "Listing zig-out directory contents:"
+            find zig-out -type f
+            exit 1
+          fi
+        shell: bash
+
+      - name: Create package (Windows)
+        if: matrix.platform == 'windows'
         shell: powershell
         run: |
-          Write-Host "Creating package..."
+          Write-Host "Creating Windows package..."
           New-Item -ItemType Directory -Force -Path package
           Copy-Item zig-out\bin\terminal-bg.exe package\
 
@@ -53,47 +71,64 @@ jobs:
           Set-Content -Path package\USAGE.txt -Value "Terminal Background Color Tool"
           Add-Content -Path package\USAGE.txt -Value "=============================="
           Add-Content -Path package\USAGE.txt -Value ""
-          Add-Content -Path package\USAGE.txt -Value "A cross-platform CLI tool for getting and setting terminal background colors."
+          Add-Content -Path package\USAGE.txt -Value "USAGE: terminal-bg.exe <command> [options]"
+          Add-Content -Path package\USAGE.txt -Value "Commands: list, get, set <color>"
+          Add-Content -Path package\USAGE.txt -Value "Colors: black, red, green, yellow, blue, magenta, cyan, white"
+          Add-Content -Path package\USAGE.txt -Value "         bright-* variants, default"
           Add-Content -Path package\USAGE.txt -Value ""
-          Add-Content -Path package\USAGE.txt -Value "USAGE:"
-          Add-Content -Path package\USAGE.txt -Value "    terminal-bg.exe <command> [options]"
-          Add-Content -Path package\USAGE.txt -Value ""
-          Add-Content -Path package\USAGE.txt -Value "COMMANDS:"
-          Add-Content -Path package\USAGE.txt -Value "    list                List all available colors"
-          Add-Content -Path package\USAGE.txt -Value "    get                 Get current background color (shows warning)"
-          Add-Content -Path package\USAGE.txt -Value "    set <color>         Set background color and clear screen"
-          Add-Content -Path package\USAGE.txt -Value ""
-          Add-Content -Path package\USAGE.txt -Value "COLORS:"
-          Add-Content -Path package\USAGE.txt -Value "    Standard: black, red, green, yellow, blue, magenta, cyan, white"
-          Add-Content -Path package\USAGE.txt -Value "    Bright:   bright-black, bright-red, bright-green, bright-yellow,"
-          Add-Content -Path package\USAGE.txt -Value "              bright-blue, bright-magenta, bright-cyan, bright-white"
-          Add-Content -Path package\USAGE.txt -Value "    Special:  default (reset to terminal default)"
-          Add-Content -Path package\USAGE.txt -Value ""
-          Add-Content -Path package\USAGE.txt -Value "EXAMPLES:"
-          Add-Content -Path package\USAGE.txt -Value "    terminal-bg.exe list"
-          Add-Content -Path package\USAGE.txt -Value "    terminal-bg.exe set blue"
-          Add-Content -Path package\USAGE.txt -Value "    terminal-bg.exe set bright-cyan"
-          Add-Content -Path package\USAGE.txt -Value "    terminal-bg.exe set default"
-          Add-Content -Path package\USAGE.txt -Value ""
-          Add-Content -Path package\USAGE.txt -Value "REQUIREMENTS:"
-          Add-Content -Path package\USAGE.txt -Value "    - Windows 10+ with modern terminal (Windows Terminal, PowerShell, CMD)"
-          Add-Content -Path package\USAGE.txt -Value "    - ANSI escape sequence support"
-          Add-Content -Path package\USAGE.txt -Value ""
-          Add-Content -Path package\USAGE.txt -Value "For more information, see README.md (English) or README_CN.md (Chinese)."
+          Add-Content -Path package\USAGE.txt -Value "See README files for details."
 
-          Write-Host "Creating archive..."
           $version = $env:GITHUB_REF -replace 'refs/tags/', ''
-          $archiveName = "terminal-bg-${version}-windows-x64.zip"
+          $archiveName = "terminal-bg-${version}-${{ matrix.platform }}-${{ matrix.arch }}.zip"
           Compress-Archive -Path package\* -DestinationPath $archiveName -Force
 
           Write-Host "Package created: $archiveName"
           Get-Item $archiveName
 
+      - name: Create package (Unix)
+        if: matrix.platform != 'windows'
+        shell: bash
+        run: |
+          echo "Creating Unix package..."
+          mkdir -p package
+          cp zig-out/bin/terminal-bg package/
+
+          echo "Copying documentation..."
+          cp README.md package/README.md
+          cp README_CN.md package/README_CN.md
+
+          echo "Creating USAGE.txt..."
+          cat > package/USAGE.txt << 'EOF'
+Terminal Background Color Tool
+==============================
+
+USAGE: terminal-bg <command> [options]
+
+Commands: list, get, set <color>
+
+Colors: black, red, green, yellow, blue, magenta, cyan, white
+        bright-* variants, default
+
+See README files for details.
+EOF
+
+          chmod +x package/terminal-bg
+
+          version="${GITHUB_REF#refs/tags/}"
+          archiveName="terminal-bg-${version}-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz"
+
+          tar -czf $archiveName -C package .
+
+          echo "Package created: $archiveName"
+          ls -lh $archiveName
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: terminal-bg-windows
-          path: terminal-bg-*-windows-x64.zip
+          name: terminal-bg-${{ matrix.platform }}
+          path: |
+            terminal-bg-*.zip
+            terminal-bg-*.tar.gz
 
   release:
     name: Create Release
@@ -104,33 +139,56 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download artifact
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: terminal-bg-windows
+          path: artifacts
+
+      - name: List downloaded artifacts
+        run: |
+          echo "Artifacts downloaded:"
+          find artifacts -type f -name "*.zip" -o -name "*.tar.gz"
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: terminal-bg-*-windows-x64.zip
+          files: |
+            artifacts/terminal-bg-windows/*.zip
+            artifacts/terminal-bg-linux/*.tar.gz
+            artifacts/terminal-bg-macos/*.tar.gz
           body: |
             ## Terminal Background Color Tool v${{ github.ref_name }}
 
-            Cross-platform CLI tool for setting terminal background colors.
+            Cross-platform CLI tool for setting terminal background colors using ANSI escape sequences.
+
+            **Platforms:**
+            - Windows x64 (ZIP archive with executable)
+            - Linux x64 (tar.gz archive with executable)
+            - macOS x64 (tar.gz archive with executable)
 
             **Features:**
             - 17 colors (8 standard + 8 bright + default)
-            - Windows 10+ support
+            - Works on modern terminals with ANSI support
             - Zig 0.16 compatible
 
             **Quick Start:**
-            ```bash
+
+            Windows:
+            ```cmd
             terminal-bg.exe list
             terminal-bg.exe set blue
             terminal-bg.exe set default
             ```
 
-            See included README files for detailed instructions.
+            Linux/macOS:
+            ```bash
+            chmod +x terminal-bg
+            ./terminal-bg list
+            ./terminal-bg set blue
+            ./terminal-bg set default
+            ```
+
+            See included README.md (English) and README_CN.md (Chinese) for detailed usage.
           draft: false
           prerelease: false
         env:
