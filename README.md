@@ -33,13 +33,13 @@ A cross-platform CLI tool for getting and setting terminal background colors. Wo
 ### Download Pre-built Binary / 下载预编译版本
 
 **English:**
-1. Go to [GitHub Releases](https://github.com/YOUR_USERNAME/terminal-color/releases)
+1. Go to [GitHub Releases](https://github.com/zhangj1164/terminal-color/releases)
 2. Download the latest `terminal-bg-vX.X.X-windows-x64.zip`
 3. Extract the ZIP file
 4. Run `terminal-bg.exe` from the extracted folder
 
 **中文:**
-1. 访问 [GitHub Releases](https://github.com/YOUR_USERNAME/terminal-color/releases)
+1. 访问 [GitHub Releases](https://github.com/zhangj1164/terminal-color/releases)
 2. 下载最新的 `terminal-bg-vX.X.X-windows-x64.zip`
 3. 解压 ZIP 文件
 4. 从解压后的文件夹运行 `terminal-bg.exe`
@@ -52,7 +52,7 @@ Requirements:
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/terminal-color.git
+git clone https://github.com/zhangj1164/terminal-color.git
 cd terminal-color
 
 # Build the project
@@ -67,7 +67,7 @@ zig build
 
 ```bash
 # 克隆仓库
-git clone https://github.com/YOUR_USERNAME/terminal-color.git
+git clone https://github.com/zhangj1164/terminal-color.git
 cd terminal-color
 
 # 构建项目
@@ -380,13 +380,13 @@ MIT 许可证 - 详情见 [LICENSE](LICENSE) 文件。
 
 **English:**
 - 📖 [Documentation](CLAUDE.md)
-- 🐛 [Issue Tracker](https://github.com/YOUR_USERNAME/terminal-color/issues)
-- 💬 [Discussions](https://github.com/YOUR_USERNAME/terminal-color/discussions)
+- 🐛 [Issue Tracker](https://github.com/zhangj1164/terminal-color/issues)
+- 💬 [Discussions](https://github.com/zhangj1164/terminal-color/discussions)
 
 **中文:**
 - 📖 [文档](CLAUDE.md)
-- 🐛 [问题追踪](https://github.com/YOUR_USERNAME/terminal-color/issues)
-- 💬 [讨论](https://github.com/YOUR_USERNAME/terminal-color/discussions)
+- 🐛 [问题追踪](https://github.com/zhangj1164/terminal-color/issues)
+- 💬 [讨论](https://github.com/zhangj1164/terminal-color/discussions)
 
 ---
 
