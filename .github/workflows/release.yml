@@ -47,39 +47,36 @@ jobs:
           Copy-Item README_CN.md package\README_CN.md
 
           Write-Host "Creating USAGE.txt..."
-          $usageContent = @"
-Terminal Background Color Tool
-==============================
-
-A cross-platform CLI tool for getting and setting terminal background colors.
-
-USAGE:
-    terminal-bg.exe <command> [options]
-
-COMMANDS:
-    list                List all available colors
-    get                 Get current background color (shows warning)
-    set <color>         Set background color and clear screen
-
-COLORS:
-    Standard: black, red, green, yellow, blue, magenta, cyan, white
-    Bright:   bright-black, bright-red, bright-green, bright-yellow,
-              bright-blue, bright-magenta, bright-cyan, bright-white
-    Special:  default (reset to terminal default)
-
-EXAMPLES:
-    terminal-bg.exe list
-    terminal-bg.exe set blue
-    terminal-bg.exe set bright-cyan
-    terminal-bg.exe set default
-
-REQUIREMENTS:
-    - Windows 10+ with modern terminal (Windows Terminal, PowerShell, CMD)
-    - ANSI escape sequence support
-
-For more information, see README.md (English) or README_CN.md (Chinese).
-"@
-          Set-Content -Path package\USAGE.txt -Value $usageContent
+          Set-Content -Path package\USAGE.txt -Value "Terminal Background Color Tool"
+          Add-Content -Path package\USAGE.txt -Value "=============================="
+          Add-Content -Path package\USAGE.txt -Value ""
+          Add-Content -Path package\USAGE.txt -Value "A cross-platform CLI tool for getting and setting terminal background colors."
+          Add-Content -Path package\USAGE.txt -Value ""
+          Add-Content -Path package\USAGE.txt -Value "USAGE:"
+          Add-Content -Path package\USAGE.txt -Value "    terminal-bg.exe <command> [options]"
+          Add-Content -Path package\USAGE.txt -Value ""
+          Add-Content -Path package\USAGE.txt -Value "COMMANDS:"
+          Add-Content -Path package\USAGE.txt -Value "    list                List all available colors"
+          Add-Content -Path package\USAGE.txt -Value "    get                 Get current background color (shows warning)"
+          Add-Content -Path package\USAGE.txt -Value "    set <color>         Set background color and clear screen"
+          Add-Content -Path package\USAGE.txt -Value ""
+          Add-Content -Path package\USAGE.txt -Value "COLORS:"
+          Add-Content -Path package\USAGE.txt -Value "    Standard: black, red, green, yellow, blue, magenta, cyan, white"
+          Add-Content -Path package\USAGE.txt -Value "    Bright:   bright-black, bright-red, bright-green, bright-yellow,"
+          Add-Content -Path package\USAGE.txt -Value "              bright-blue, bright-magenta, bright-cyan, bright-white"
+          Add-Content -Path package\USAGE.txt -Value "    Special:  default (reset to terminal default)"
+          Add-Content -Path package\USAGE.txt -Value ""
+          Add-Content -Path package\USAGE.txt -Value "EXAMPLES:"
+          Add-Content -Path package\USAGE.txt -Value "    terminal-bg.exe list"
+          Add-Content -Path package\USAGE.txt -Value "    terminal-bg.exe set blue"
+          Add-Content -Path package\USAGE.txt -Value "    terminal-bg.exe set bright-cyan"
+          Add-Content -Path package\USAGE.txt -Value "    terminal-bg.exe set default"
+          Add-Content -Path package\USAGE.txt -Value ""
+          Add-Content -Path package\USAGE.txt -Value "REQUIREMENTS:"
+          Add-Content -Path package\USAGE.txt -Value "    - Windows 10+ with modern terminal (Windows Terminal, PowerShell, CMD)"
+          Add-Content -Path package\USAGE.txt -Value "    - ANSI escape sequence support"
+          Add-Content -Path package\USAGE.txt -Value ""
+          Add-Content -Path package\USAGE.txt -Value "For more information, see README.md (English) or README_CN.md (Chinese)."
 
           Write-Host "Creating archive..."
           $version = $env:GITHUB_REF -replace 'refs/tags/', ''
