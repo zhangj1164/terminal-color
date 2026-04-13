@@ -98,19 +98,17 @@ jobs:
           cp README_CN.md package/README_CN.md
 
           echo "Creating USAGE.txt..."
-          cat > package/USAGE.txt << 'EOF'
-Terminal Background Color Tool
-==============================
-
-USAGE: terminal-bg <command> [options]
-
-Commands: list, get, set <color>
-
-Colors: black, red, green, yellow, blue, magenta, cyan, white
-        bright-* variants, default
-
-See README files for details.
-EOF
+          echo "Terminal Background Color Tool" > package/USAGE.txt
+          echo "==============================" >> package/USAGE.txt
+          echo "" >> package/USAGE.txt
+          echo "USAGE: terminal-bg <command> [options]" >> package/USAGE.txt
+          echo "" >> package/USAGE.txt
+          echo "Commands: list, get, set <color>" >> package/USAGE.txt
+          echo "" >> package/USAGE.txt
+          echo "Colors: black, red, green, yellow, blue, magenta, cyan, white" >> package/USAGE.txt
+          echo "        bright-* variants, default" >> package/USAGE.txt
+          echo "" >> package/USAGE.txt
+          echo "See README files for details." >> package/USAGE.txt
 
           chmod +x package/terminal-bg
 
