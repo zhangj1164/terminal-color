@@ -16,38 +16,78 @@ jobs:
 
       - name: Setup Zig
         uses: goto-bus-stop/setup-zig@v2
-        with:
-          version: 0.16.0-dev.3133
+
+      - name: Verify Zig version
+        run: zig version
 
       - name: Build project
-        run: zig build
+        run: |
+          Write-Host "Building project with Zig..."
+          zig build
+          Write-Host "Build completed. Checking output..."
+          if (Test-Path "zig-out\bin\terminal-bg.exe") {
+            Write-Host "Executable found: zig-out\bin\terminal-bg.exe"
+            Get-Item "zig-out\bin\terminal-bg.exe" | Select-Object Name, Length, LastWriteTime
+          } else {
+            Write-Host "ERROR: Executable not found!"
+            Write-Host "Listing zig-out directory contents:"
+            Get-ChildItem -Path zig-out -Recurse
+            exit 1
+          }
 
       - name: Create package
+        shell: powershell
         run: |
-          mkdir package
-          copy zig-out\bin\terminal-bg.exe package\
-          copy CLAUDE.md package\README.md
+          Write-Host "Creating package..."
+          New-Item -ItemType Directory -Force -Path package
+          Copy-Item zig-out\bin\terminal-bg.exe package\
 
-          echo Terminal Background Color Tool > package\USAGE.txt
-          echo. >> package\USAGE.txt
-          echo A cross-platform CLI tool for getting and setting terminal background colors. >> package\USAGE.txt
-          echo. >> package\USAGE.txt
-          echo USAGE: >> package\USAGE.txt
-          echo     terminal-bg.exe ^<command^> [options] >> package\USAGE.txt
-          echo. >> package\USAGE.txt
-          echo COMMANDS: >> package\USAGE.txt
-          echo     list                List all available colors >> package\USAGE.txt
-          echo     get                 Get current background color >> package\USAGE.txt
-          echo     set ^<color^>         Set background color and clear screen >> package\USAGE.txt
-          echo. >> package\USAGE.txt
-          echo COLORS: >> package\USAGE.txt
-          echo     Standard: black, red, green, yellow, blue, magenta, cyan, white >> package\USAGE.txt
-          echo     Bright: bright-black, bright-red, bright-green, bright-yellow, >> package\USAGE.txt
-          echo             bright-blue, bright-magenta, bright-cyan, bright-white >> package\USAGE.txt
-          echo     Special: default (reset to terminal default) >> package\USAGE.txt
+          Write-Host "Copying documentation..."
+          Copy-Item README.md package\README.md
+          Copy-Item README_CN.md package\README_CN.md
 
+          Write-Host "Creating USAGE.txt..."
+          $usageContent = @"
+Terminal Background Color Tool
+==============================
+
+A cross-platform CLI tool for getting and setting terminal background colors.
+
+USAGE:
+    terminal-bg.exe <command> [options]
+
+COMMANDS:
+    list                List all available colors
+    get                 Get current background color (shows warning)
+    set <color>         Set background color and clear screen
+
+COLORS:
+    Standard: black, red, green, yellow, blue, magenta, cyan, white
+    Bright:   bright-black, bright-red, bright-green, bright-yellow,
+              bright-blue, bright-magenta, bright-cyan, bright-white
+    Special:  default (reset to terminal default)
+
+EXAMPLES:
+    terminal-bg.exe list
+    terminal-bg.exe set blue
+    terminal-bg.exe set bright-cyan
+    terminal-bg.exe set default
+
+REQUIREMENTS:
+    - Windows 10+ with modern terminal (Windows Terminal, PowerShell, CMD)
+    - ANSI escape sequence support
+
+For more information, see README.md (English) or README_CN.md (Chinese).
+"@
+          Set-Content -Path package\USAGE.txt -Value $usageContent
+
+          Write-Host "Creating archive..."
           $version = $env:GITHUB_REF -replace 'refs/tags/', ''
-          Compress-Archive -Path package -DestinationPath "terminal-bg-${version}-windows-x64.zip"
+          $archiveName = "terminal-bg-${version}-windows-x64.zip"
+          Compress-Archive -Path package\* -DestinationPath $archiveName -Force
+
+          Write-Host "Package created: $archiveName"
+          Get-Item $archiveName
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
