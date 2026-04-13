@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build and Package
@@ -107,33 +110,27 @@ jobs:
           name: terminal-bg-windows
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: terminal-bg-*-windows-x64.zip
           body: |
-            ## Terminal Background Color Tool
+            ## Terminal Background Color Tool v${{ github.ref_name }}
 
-            A cross-platform CLI tool for setting terminal background colors using ANSI escape sequences.
+            Cross-platform CLI tool for setting terminal background colors.
 
-            ### Features
-            - 17 color options (8 standard + 8 bright + default)
-            - Works on Windows 10+ and Unix-like systems
+            **Features:**
+            - 17 colors (8 standard + 8 bright + default)
+            - Windows 10+ support
             - Zig 0.16 compatible
 
-            ### Installation
-            Download and extract the zip file, then run:
+            **Quick Start:**
             ```bash
+            terminal-bg.exe list
             terminal-bg.exe set blue
+            terminal-bg.exe set default
             ```
 
-            ### Usage
-            ```bash
-            terminal-bg.exe list      # List all colors
-            terminal-bg.exe set blue  # Set background color
-            terminal-bg.exe set default  # Reset to default
-            ```
-
-            See included README.md and USAGE.txt for detailed instructions.
+            See included README files for detailed instructions.
           draft: false
           prerelease: false
         env:
