@@ -6,6 +6,9 @@ zig-out/
 *.exe
 *.pdb
 
+# Release packages
+*.zip
+
 # Tool configurations
 .wanma-cli/
 .claude/

@@ -1,0 +1,103 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build and Package
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.16.0-dev.3133
+
+      - name: Build project
+        run: zig build
+
+      - name: Create package
+        run: |
+          mkdir package
+          copy zig-out\bin\terminal-bg.exe package\
+          copy CLAUDE.md package\README.md
+
+          echo Terminal Background Color Tool > package\USAGE.txt
+          echo. >> package\USAGE.txt
+          echo A cross-platform CLI tool for getting and setting terminal background colors. >> package\USAGE.txt
+          echo. >> package\USAGE.txt
+          echo USAGE: >> package\USAGE.txt
+          echo     terminal-bg.exe ^<command^> [options] >> package\USAGE.txt
+          echo. >> package\USAGE.txt
+          echo COMMANDS: >> package\USAGE.txt
+          echo     list                List all available colors >> package\USAGE.txt
+          echo     get                 Get current background color >> package\USAGE.txt
+          echo     set ^<color^>         Set background color and clear screen >> package\USAGE.txt
+          echo. >> package\USAGE.txt
+          echo COLORS: >> package\USAGE.txt
+          echo     Standard: black, red, green, yellow, blue, magenta, cyan, white >> package\USAGE.txt
+          echo     Bright: bright-black, bright-red, bright-green, bright-yellow, >> package\USAGE.txt
+          echo             bright-blue, bright-magenta, bright-cyan, bright-white >> package\USAGE.txt
+          echo     Special: default (reset to terminal default) >> package\USAGE.txt
+
+          $version = $env:GITHUB_REF -replace 'refs/tags/', ''
+          Compress-Archive -Path package -DestinationPath "terminal-bg-${version}-windows-x64.zip"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: terminal-bg-windows
+          path: terminal-bg-*-windows-x64.zip
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: terminal-bg-windows
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: terminal-bg-*-windows-x64.zip
+          body: |
+            ## Terminal Background Color Tool
+
+            A cross-platform CLI tool for setting terminal background colors using ANSI escape sequences.
+
+            ### Features
+            - 17 color options (8 standard + 8 bright + default)
+            - Works on Windows 10+ and Unix-like systems
+            - Zig 0.16 compatible
+
+            ### Installation
+            Download and extract the zip file, then run:
+            ```bash
+            terminal-bg.exe set blue
+            ```
+
+            ### Usage
+            ```bash
+            terminal-bg.exe list      # List all colors
+            terminal-bg.exe set blue  # Set background color
+            terminal-bg.exe set default  # Reset to default
+            ```
+
+            See included README.md and USAGE.txt for detailed instructions.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
